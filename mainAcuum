@@ -1,0 +1,20 @@
+package com.djim.tranning.spark.accumulators
+
+import org.apache.spark.sql.SparkSession
+
+object MainAccc extends App {
+  val spark: SparkSession = SparkSession.builder().master("local").getOrCreate()
+  val sc = spark.sparkContext
+  val path = "C:\\Formations\\data\\accumulator.txt"
+  val mapAccumulators = new MapAccumulators()
+  sc.register(mapAccumulators, "mapAccumulators")
+  sc.textFile(path).map(_.split(",")).map(x =>
+  {
+    val state = x(0)
+    val year = x(1)
+    val population = x(2).toInt
+    mapAccumulators.add((year, population))
+  }).count()
+
+  mapAccumulators.mapAccumulators.foreach(println)
+}
